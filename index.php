@@ -1,3 +1,8 @@
 <?php
+session_start();
 
-echo "Hello World";
+if (isset($_SESSION['user_id'])) {
+    echo "Logged In";
+} else {
+    echo "Not logged in";
+}

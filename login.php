@@ -19,12 +19,12 @@ if (isset($_POST['email'])) {
 
     if ($status == 'success') {
         $result = $data[0];
-        $_SESSION['id'] = $result['id'];
-        $_SESSION['name'] = $result['name'];
-        $_SESSION['email'] = $result['email'];
-        $_SESSION['phone'] = $result['phone'];
-        $_SESSION['address'] = $result['address'];
-        $_SESSION['role'] = $result['role'];
+        $_SESSION['user_id'] = $result['id'];
+        $_SESSION['user_name'] = $result['name'];
+        $_SESSION['user_email'] = $result['email'];
+        $_SESSION['user_phone'] = $result['phone'];
+        $_SESSION['user_address'] = $result['address'];
+        $_SESSION['user_role'] = $result['role'];
 
         header("Location: index.php");
     } else {
@@ -81,10 +81,7 @@ if (isset($_POST['email'])) {
 
                     <div class="pt-2">
                         <p class="text-center login our-green">
-                            <a href="signup.php?type=alumni">Sign up as Alumni →</a>
-                        </p>
-                        <p class="text-center pt-2 login our-blue">
-                            <a href="signup.php?type=student">Sign up as Student →</a>
+                            Not a User? <a href="signup.php">Sign up →</a>
                         </p>
                     </div>
                 </form>
