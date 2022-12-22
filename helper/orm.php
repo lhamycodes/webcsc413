@@ -7,11 +7,11 @@ class ORM
         include_once 'helper/db.php';
     }
 
-    public function query($table, $params, $errorMessage = null)
+    public function query($table, $params, $fields = "*", $errorMessage = null)
     {
         global $conn;
 
-        $result = mysqli_query($conn, "SELECT * FROM `$table` WHERE $params");
+        $result = mysqli_query($conn, "SELECT $fields FROM `$table` WHERE $params");
         if (mysqli_num_rows($result) < 1 && $errorMessage != null) {
             return $this->sendResponse(status: 'error', data: $errorMessage);
         }
