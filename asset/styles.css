@@ -372,7 +372,7 @@ main .subheader p {
   text-align: justify;
   margin-bottom: 18px;
 }
-.place-bid-page .details a.button-type {
+.place-bid-page .details .button-type {
   background: #9bc742;
   border-radius: 10px;
   padding: 19px 42px;

@@ -1,6 +1,11 @@
 <?php
-require_once 'helper/orm.php';
 session_start();
+
+require_once 'helper/orm.php';
+extract(array_map("htmlspecialchars", $_POST));
+
+$noticeType = null;
+$message = null;
 
 if (!isset($_SESSION['user_id'])) {
     header("location: login.php");
@@ -23,9 +28,92 @@ $item = $item[0];
 [$stat, $bids] = $orm->queryRelationship(
     table: 'bids',
     join: 'users ON users.id = bids.user_id',
-    fields: 'users.name AS user_name, users.address AS user_location, bids.id, bids.user_id, bids.item_id, bids.status',
-    params: "bids.id = " . $item['id'],
+    fields: 'users.name AS user_name, users.phone AS user_phone, users.address AS user_location, bids.id, bids.user_id, bids.item_id, bids.status',
+    params: "bids.item_id = " . $item['id'],
 );
+
+if (isset($_POST['placeBid'])) {
+    [$stat, $check] = $orm->query(
+        table: 'bids',
+        fields: 'id',
+        params: "user_id = {$_SESSION['user_id']} AND item_id = {$item['id']}"
+    );
+
+    if (count($check) > 0) {
+        $message = 'You have already placed a bid for this item';
+        $noticeType = 'danger';
+        echo "
+            <script>
+                setTimeout(() => {
+                    window.location.href = 'donation-item.php?id={$item['id']}';
+                }, 2000);
+            </script>";
+    } else {
+        $input = [
+            'user_id' => $_SESSION['user_id'],
+            'item_id' => $item['id'],
+            'status' => 'pending'
+        ];
+
+        [$status, $data] = $orm->insert(
+            table: 'bids',
+            data: $input,
+            errorMessage: 'An error occurred while placing your bid',
+        );
+
+        if ($status == 'success') {
+            $message = 'Bid placed successfully';
+            $noticeType = 'primary';
+            echo "
+            <script>
+                setTimeout(() => {
+                    window.location.href = 'donation-item.php?id={$item['id']}';
+                }, 2000);
+            </script>";
+        } else {
+            $message = $data;
+            $noticeType = 'danger';
+        }
+    }
+}
+
+if (isset($_POST['selectBid'])) {
+    [$status, $data] = $orm->update(
+        table: 'donations',
+        data: ['won_by' => $_POST['bid_user_id']],
+        params: "id = {$item['id']}",
+        errorMessage: 'An error occurred while selecting the bid',
+    );
+
+    if ($status == 'success') {
+        // update bid status table
+        [$l_, $dtl] = $orm->update(
+            table: 'bids',
+            data: ['status' => 'lost'],
+            params: "item_id = {$item['id']} AND id != {$_POST['bid_id']}",
+            errorMessage: 'An error occurred while selecting the bid',
+        );
+
+        [$w_, $dtw] = $orm->update(
+            table: 'bids',
+            data: ['status' => 'won'],
+            params: "id = {$_POST['bid_id']}",
+            errorMessage: 'An error occurred while selecting the bid',
+        );
+
+        $message = 'Bid selected successfully';
+        $noticeType = 'primary';
+        echo "
+            <script>
+                setTimeout(() => {
+                    window.location.href = 'donation-item.php?id={$item['id']}';
+                }, 2000);
+            </script>";
+    } else {
+        $message = $data;
+        $noticeType = 'danger';
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -62,10 +150,16 @@ $item = $item[0];
                             Donated by <span class="our-green"><?php echo $item['user_name'] ?></span>
                         </p>
 
+                        <?php
+                        if ($message != null) {
+                            echo "<div class='my-5 alert alert-{$noticeType}' role='alert'>{$message}</div>";
+                        }
+                        ?>
+
                         <?php if ($_SESSION['user_role'] == 'student' && $item['won_by'] == null) { ?>
-                            <div>
-                                <a href="#" class="slow-mo button-type">Place a Bid →</a>
-                            </div>
+                            <form action="" method="POST">
+                                <button type="submit" name="placeBid" class="slow-mo button-type">Place a Bid →</button>
+                            </form>
                         <?php } ?>
 
                     </div>
@@ -73,7 +167,7 @@ $item = $item[0];
 
                 <?php if ($_SESSION['user_role'] == 'alumni' && $_SESSION['user_id'] == $item['user_id']) { ?>
                     <div class="col-12">
-                        <h6 class="table-header">Select one of the Bids below.</h6>
+                        <h6 class="table-header"><?php echo ($item['won_by'] == null) ? "Select one of the Bids below." : "View Bids"; ?></h6>
                         <div class="table-wrapper">
                             <?php
                             foreach ($bids as $bid) {
@@ -84,16 +178,23 @@ $item = $item[0];
                                     </div>
                                     <div class='level'>
                                         <img src='./asset/icons/level.svg' alt='level' class='me-md-2 me-1' />
-                                        400L
+                                        {$bid['user_phone']}
                                     </div>
                                     <div class='location'>
                                         <img src='./asset/icons/pin.svg' alt='location' class='me-1' />
                                         {$bid['user_location']}
-                                    </div>
-                                    <div class='pe-2'>
-                                        <button class='slow-mo2'>Select</button>
-                                    </div>
-                                </div>";
+                                    </div>";
+                                if ($item['won_by'] == null) {
+                                    echo "<form method='POST' action='' id='form{$bid['id']}' class='pe-2'>
+                                            <input type='hidden' name='bid_id' value='{$bid['id']}'>
+                                            <input type='hidden' name='bid_user_id' value='{$bid['user_id']}'>
+                                            <button type='submit' name='selectBid' class='slow-mo2'>Select</button>
+                                        </form>";
+                                } else {
+                                    $color = $bid['status'] == 'lost' ? 'red' : 'green';
+                                    echo "<button style='background: $color'>{$bid['status']}</button>";
+                                }
+                                echo "</div>";
                             }
                             ?>
                         </div>

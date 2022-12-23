@@ -55,6 +55,26 @@ class ORM
         return $this->sendResponse(status: 'success', data: "Created new $table record successfully");
     }
 
+    public function update($table, $data, $params, $errorMessage)
+    {
+        global $conn;
+
+        $query = "UPDATE `$table` SET ";
+        foreach ($data as $key => $value) {
+            $query .= "`$key` = '$value', ";
+        }
+        $query = substr($query, 0, -2);
+        $query .= " WHERE $params";
+
+        mysqli_query($conn, $query);
+
+        if (mysqli_affected_rows($conn) < 1) {
+            return $this->sendResponse(status: 'error', data: $errorMessage . " - " . mysqli_error($conn));
+        }
+
+        return $this->sendResponse(status: 'success', data: "Updated $table record successfully");
+    }
+
     private function sendResponse($status, $data)
     {
         return [$status, $data];
