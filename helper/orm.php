@@ -24,8 +24,18 @@ class ORM
         return $this->sendResponse(status: 'success', data: $rows);
     }
 
-    public function queryCount($table, $params)
+    public function queryRelationship($table, $join, $fields, $params)
     {
+        global $conn;
+
+        $result = mysqli_query($conn, "SELECT $fields FROM $table INNER JOIN $join WHERE $params");
+
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+
+        return $this->sendResponse(status: 'success', data: $rows);
     }
 
     public function insert($table, $data, $errorMessage)

@@ -26,7 +26,7 @@ if (isset($_POST['name'])) {
     if (in_array($ext, ['jpg', 'jpeg', 'png'])) {
         $path = $path . strtolower($finalImage);
         if (move_uploaded_file($tmp, $path)) {
-            $image = $finalImage;
+            $image = $path;
         }
     }
 
