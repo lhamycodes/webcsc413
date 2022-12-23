@@ -24,6 +24,10 @@ class ORM
         return $this->sendResponse(status: 'success', data: $rows);
     }
 
+    public function queryCount($table, $params)
+    {
+    }
+
     public function insert($table, $data, $errorMessage)
     {
         global $conn;

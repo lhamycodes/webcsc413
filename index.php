@@ -1,9 +1,24 @@
 <?php
+require_once 'helper/orm.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
     header("location: login.php");
 }
+
+$orm = new ORM();
+
+$students = $orm->query(
+    table: 'users',
+    params: "role = 'student'",
+    fields: "COUNT(*) as count",
+)[1][0]['count'];
+
+$donations = $orm->query(
+    table: 'donations',
+    params: "`user_id` IS NOT NULL",
+    fields: "COUNT(*) as count",
+)[1][0]['count'];
 ?>
 
 <!DOCTYPE html>
@@ -20,36 +35,7 @@ if (!isset($_SESSION['user_id'])) {
 
 <body>
     <div class="container">
-        <header>
-            <div class="row">
-                <div class="col-auto">
-                    <img src="./asset/icons/alumni-donation-logo-1.svg" alt="" />
-                </div>
-                <div class="col">
-                    <div class="navi">
-                        <ul>
-                            <li class="active"><a href="./home.html">Home</a></li>
-                            <li><a href="#">History</a></li>
-                            <li><a href="#">Reviews</a></li>
-                            <li><a href="./help.html">Help</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <div class="header-right">
-                        <div>
-                            <img src="./asset/icons/notification.svg" alt="notification" />
-                        </div>
-                        <div class="dp">
-                            <img src="./asset/images/dp-image.png" alt="dp" />
-                        </div>
-                        <div class="d-name">
-                            <p>Amandaco3</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <?php include './helper/incl/header.php'; ?>
 
         <main class="main row">
             <div class="col-md-6">
@@ -58,17 +44,29 @@ if (!isset($_SESSION['user_id'])) {
                     <span class="share">Share to</span> support students today!
                 </h3>
                 <h5 class="p_txt">Every donation you make, helps one student</h5>
-                <a class="btn d_link" href="http://" target="_blank" rel="noopener noreferrer">Donate an item→</a>
+
+                <a class="btn d_link" href="donate-item.php" rel="noopener noreferrer">
+                    Donate an item→
+                </a>
+
                 <div class="stat_bar row">
                     <div class="col">
-                        <h5><img src="./asset/icons/HVector.png" alt="" /> 3,500</h5>
+                        <h5>
+                            <img src="./asset/icons/HVector.png" alt="" />
+                            <?php echo number_format($donations); ?>
+                        </h5>
                         <p>Donations Received</p>
                     </div>
+
                     <div class="col">
                         <img src="./asset/icons/LVector.png" alt="" />
                     </div>
+
                     <div class="col">
-                        <h5><img src="./asset/icons/SVector.png" alt="" /> 5,130</h5>
+                        <h5>
+                            <img src="./asset/icons/SVector.png" alt="" />
+                            <?php echo number_format($students); ?>
+                        </h5>
                         <p>Students signed up</p>
                     </div>
                 </div>
@@ -81,12 +79,12 @@ if (!isset($_SESSION['user_id'])) {
                     <img src="./asset/icons/Ellipse 13.svg" alt="" />
                     <div class="d_rec">
                         <p class="b_txt">Donation recieved</p>
-                        <h5 class="a_txt">3,500</h5>
+                        <h5 class="a_txt"><?php echo number_format($donations); ?></h5>
                         <img src="./asset/images/Group 1.png" alt="" />
                     </div>
                     <div class="s_sig">
                         <p class="b_txt">Students signed</p>
-                        <h5 class="a_txt">5,130</h5>
+                        <h5 class="a_txt"><?php echo number_format($students); ?></h5>
                         <img src="./asset/images/Group 2.png" alt="" />
                     </div>
                 </div>

@@ -1,9 +1,64 @@
 <?php
 session_start();
 require_once 'helper/orm.php';
+extract(array_map("htmlspecialchars", $_POST));
+
+$noticeType = null;
+$message = null;
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 'alumni') {
     header("location:index.php");
+}
+
+if (isset($_POST['name'])) {
+    $orm = new ORM();
+
+    $image = null;
+    $path = "asset/uploads/";
+
+    $img = $_FILES['file']['name'];
+    $tmp = $_FILES['file']['tmp_name'];
+
+    $ext = strtolower(pathinfo($img, PATHINFO_EXTENSION));
+
+    $finalImage = rand(1000, 1000000) . "-" . time() . "-" . $img;
+
+    if (in_array($ext, ['jpg', 'jpeg', 'png'])) {
+        $path = $path . strtolower($finalImage);
+        if (move_uploaded_file($tmp, $path)) {
+            $image = $finalImage;
+        }
+    }
+
+    if ($image == null) {
+        $message = 'An error occurred while uploading your image';
+        $noticeType = 'danger';
+    } else {
+        [$status, $data] = $orm->insert(
+            table: 'donations',
+            data: [
+                'user_id' => $_SESSION['user_id'],
+                'name' => $name,
+                'description' => $description,
+                'image' => $image,
+            ],
+            errorMessage: 'An error occurred while creating your item',
+        );
+
+        if ($status == 'success') {
+            $message = 'Item created successfully';
+            $noticeType = 'primary';
+            echo "
+            <script>
+                setTimeout(() => {
+                    window.location.href = 'index.php';
+                }, 2000);
+            </script>";
+        } else {
+            $message = $data;
+            $noticeType = 'danger';
+        }
+    }
 }
 ?>
 
@@ -21,59 +76,35 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 'alumni') {
 
 <body>
     <div class="container create-page">
-        <header>
-            <div class="row">
-                <div class="col-auto">
-                    <img src="./asset/icons/alumni-donation-logo-1.svg" alt="" />
-                </div>
-                <div class="col">
-                    <div class="navi">
-                        <ul>
-                            <li class="active"><a href="./home.html">Home</a></li>
-                            <li><a href="#">History</a></li>
-                            <li><a href="#">Reviews</a></li>
-                            <li><a href="./help.html">Help</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <div class="header-right">
-                        <div>
-                            <img src="./asset/icons/notification.svg" alt="notification" />
-                        </div>
-                        <div class="dp">
-                            <img src="./asset/images/dp-image.png" alt="dp" />
-                        </div>
-                        <div class="d-name">
-                            <p>Amandaco3</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <?php include './helper/incl/header.php'; ?>
 
         <main class="main">
             <div class="subheader">
-                <h3 class="">Create an Item</h3>
-                <p class="">Upload a new item for Donation</p>
+                <h3>Create an Item</h3>
+                <p>Upload a new item for Donation</p>
 
-                <form action="" class="create-form">
+                <?php
+                if ($message != null) {
+                    echo '<div class="my-5 alert alert-' . $noticeType . ' role="alert">
+                        ' . $message . '
+                    </div>';
+                }
+                ?>
+
+                <form action="" method="POST" class="create-form" enctype="multipart/form-data">
                     <div>
-                        <label for="uploadFile">Image of your Item</label>
-                        <div class="upload">
-                            <input type="file" id="uploadFile" class="upload-file" />
-                            <img src="./asset/images/upload-img.png" alt="upload image" class="upload-img" />
-                        </div>
+                        <label for="file">Image of your Item</label>
+                        <input type="file" name="file" required accept="image/png, image/jpeg" />
                     </div>
 
                     <div>
                         <label for="">Name of Item</label>
-                        <input type="text" placeholder="Name of Item" />
+                        <input type="text" placeholder="Name of Item" name="name" />
                     </div>
 
                     <div>
                         <label for="descrption">Item Description</label>
-                        <textarea name="descrption" id="descrption" cols="100%" rows="6"></textarea>
+                        <textarea name="description" cols="100%" rows="6"></textarea>
                     </div>
 
                     <div>
