@@ -45,9 +45,15 @@ $donations = $orm->query(
                 </h3>
                 <h5 class="p_txt">Every donation you make, helps one student</h5>
 
-                <a class="btn d_link" href="donate-item.php" rel="noopener noreferrer">
-                    Donate an item→
-                </a>
+                <?php if ($_SESSION['user_role'] == 'alumni') { ?>
+                    <a class="btn d_link" href="donate-item.php" rel="noopener noreferrer">
+                        Donate an item→
+                    </a>
+                <?php } else { ?>
+                    <a class="btn d_link" href="donations.php" rel="noopener noreferrer">
+                        View Items→
+                    </a>
+                <?php } ?>
 
                 <div class="stat_bar row">
                     <div class="col">

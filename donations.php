@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 $orm = new ORM();
 
 if ($_SESSION['user_role'] == 'student') {
-    $params = "won_by IS NULL";
+    $params = "user_id IS NOT NULL";
 } else {
     $params = "user_id = " . $_SESSION['user_id'];
 }

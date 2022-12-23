@@ -4,14 +4,14 @@ session_start();
 require_once 'helper/orm.php';
 extract(array_map("htmlspecialchars", $_POST));
 
-$noticeType = null;
-$message = null;
-
 if (!isset($_SESSION['user_id'])) {
     header("location: login.php");
 }
 
 $orm = new ORM();
+
+$noticeType = null;
+$message = null;
 
 [$status, $item] = $orm->queryRelationship(
     table: 'donations',
@@ -62,7 +62,7 @@ if (isset($_POST['placeBid'])) {
         );
 
         if ($status == 'success') {
-            $message = 'Bid placed successfully';
+            $message = 'Bid placed successfully. If you get selected, you will be notified.';
             $noticeType = 'primary';
             echo "
             <script>
@@ -132,7 +132,7 @@ if (isset($_POST['selectBid'])) {
     <div class="container">
         <?php include './helper/incl/header.php'; ?>
 
-        <main class="main" style="margin-top: 0px;">
+        <main class="main clearTopSpacing">
             <div class="row place-bid pb-2">
                 <div class="col-md-6">
                     <img src="<?php echo $item['image'] ?>" style="height:570px" alt="bid" class="slow-mo" />

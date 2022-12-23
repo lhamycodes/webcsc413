@@ -11,7 +11,7 @@ include './helper/active.php';
             <div class="navi">
                 <ul>
                     <li class="<?php active('index.php'); ?>"><a href="index.php">Home</a></li>
-                    <li class="<?php active('donations.php'); ?>"><a href="donations.php">History</a></li>
+                    <li class="<?php active('donations.php'); ?>"><a href="donations.php">Donations</a></li>
                     <li class="<?php active('reviews.php'); ?>"><a href="reviews.php">Reviews</a></li>
                     <li class="<?php active('help.php'); ?>"><a href="help.php">Help</a></li>
                 </ul>
@@ -19,9 +19,11 @@ include './helper/active.php';
         </div>
         <div class="col-auto">
             <div class="header-right">
-                <div>
-                    <img src="./asset/icons/notification.svg" alt="notification" />
-                </div>
+                <?php if ($_SESSION['user_role'] == 'student') { ?>
+                    <div>
+                        <a href="notifications.php"><img src="./asset/icons/notification.svg" alt="notification" /></a>
+                    </div>
+                <?php } ?>
                 <div class="dp">
                     <img src="./asset/images/dp-image.png" alt="dp" />
                 </div>

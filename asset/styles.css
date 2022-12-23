@@ -897,6 +897,11 @@ p {
   line-height: 16.71px;
 }
 
+.clearTopSpacing {
+  padding-top: 0px !important; 
+  margin-top: 0px !important;
+}
+
 /* .img_cont {
     width: 520px;
     height: 520px;
